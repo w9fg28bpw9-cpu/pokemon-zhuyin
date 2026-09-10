@@ -122,13 +122,14 @@ button:active{transform:translateY(2px);box-shadow:none}.random{background:#69c8
 
   <div class="controls">
     <label>最高編號 <input id="maxNo" type="number" min="12" max="1025" value="1025" inputmode="numeric"></label>
+    <button class="random" id="newBtn" type="button">✨ 只抽新版 501～1025</button>
     <button class="random" id="randomBtn">🎲 隨機產生 12 隻</button>
     <button class="stars" id="zhuyinBtn">⭐ 注音代表（37音全覽）</button>
     <button class="print" onclick="window.print()">🖨️ A4 列印</button>
   </div>
   <div class="status" id="status"></div>
   <main class="grid" id="grid"></main>
-  <div class="footer-note">寶可夢圖片網址採 assets.pokemon.com 圖鑑格式；若圖片無法載入會自動顯示 fallback。注音採逐字分組顯示。No.501～1025 名稱會在首次抽到時讀取繁體中文圖鑑資料並快取於瀏覽器；注音會先套用寶可夢專用校正，再由內建中文字音資料補齊。</div>
+  <div class="footer-note">寶可夢圖片網址採 assets.pokemon.com 圖鑑格式；若圖片無法載入會自動顯示 fallback。注音採逐字分組顯示。No.1～1025 寶可夢名稱皆已內建於網頁；注音會先套用寶可夢專用校正，再由內建中文字音資料補齊。</div>
 </div>
 
 <script>
