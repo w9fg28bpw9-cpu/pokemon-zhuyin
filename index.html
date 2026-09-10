@@ -103,6 +103,10 @@ button:active{transform:translateY(2px);box-shadow:none}.random{background:#69c8
  }
 
 }
+
+.range-sep{font-weight:800;color:#58748a;font-size:1.15em;align-self:center}
+.controls input[type="number"]{width:110px}
+@media(max-width:600px){.controls input[type="number"]{width:92px}}
 </style>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -121,8 +125,13 @@ button:active{transform:translateY(2px);box-shadow:none}.random{background:#69c8
   </section>
 
   <div class="controls">
-    <label>最高編號 <input id="maxNo" type="number" min="12" max="1025" value="1025" inputmode="numeric"></label>
-    <button class="random" id="newBtn" type="button">✨ 只抽新版 501～1025</button>
+    <label>編號從
+        <input id="minNo" type="number" min="1" max="1025" value="1" inputmode="numeric">
+      </label>
+      <span class="range-sep">～</span>
+      <label>到
+        <input id="maxNo" type="number" min="1" max="1025" value="1025" inputmode="numeric">
+      </label>
     <button class="random" id="randomBtn">🎲 隨機產生 12 隻</button>
     <button class="stars" id="zhuyinBtn">⭐ 注音代表（37音全覽）</button>
     <button class="print" onclick="window.print()">🖨️ A4 列印</button>
@@ -262,26 +271,18 @@ function render(list,mode){
 }
 async function random12(){
  let max=Math.max(12,Math.min(1025,Number(maxNo.value)||1025)); maxNo.value=max;
- const set=new Set(); while(set.size<12)set.add(1+Math.floor(Math.random()*max));
+ const set=new Set(); const count=Math.min(12,max-min+1); while(set.size<count)set.add(min+Math.floor(Math.random()*(max-min+1)));
  status.textContent="🎲 正在準備本次 12 隻寶可夢…";
  const nums=[...set];
  const mons=await Promise.all(nums.map(resolvePokemon));
  render(mons.map(p=>({p})),"random");
 }
 
-async function randomNew12(){
- const set=new Set(); while(set.size<12)set.add(501+Math.floor(Math.random()*525));
- status.textContent="✨ 正在準備新版寶可夢…";
- const nums=[...set];
- const mons=await Promise.all(nums.map(resolvePokemon));
- render(mons.map(p=>({p})),"random");
-}
 
 function showRep(){
  render(REP.map(([b,no,name,zy])=>({badge:b,p:{no,name,zhuyin:zy}})),"rep");
 }
 document.getElementById("randomBtn").addEventListener("click",random12);
-document.getElementById("newBtn").addEventListener("click",randomNew12);
 document.getElementById("zhuyinBtn").addEventListener("click",showRep);
 maxNo.addEventListener("change",()=>{maxNo.value=Math.max(12,Math.min(1025,Number(maxNo.value)||1025))});
 random12();
