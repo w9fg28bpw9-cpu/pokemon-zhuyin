@@ -356,36 +356,43 @@ function matchesZhuyinSymbol(p,symbol){
 
 async function searchPokemon(){
  const raw=document.getElementById("searchInput").value.trim();
- const symbol=document.getElementById("zhuyinSelect").value;
- let nums=allPokemonNumbers();
+ let min=Math.min(1025,Math.max(1,Number(document.getElementById("minNo").value)||1));
+ let max=Math.min(1025,Math.max(1,Number(document.getElementById("maxNo").value)||1025));
+ if(min>max)[min,max]=[max,min];
+ document.getElementById("minNo").value=min;
+ document.getElementById("maxNo").value=max;
 
+ let nums=[];
+ let label="";
+
+ // 有輸入編號或名稱時：直接搜尋，不受注音下拉選單影響。
  if(raw){
    if(/^\d+$/.test(raw)){
      const n=Number(raw);
      nums=(n>=1 && n<=1025)?[n]:[];
+     label=`編號 No.${raw}`;
    }else{
-     nums=nums.filter(no=>{
+     nums=allPokemonNumbers().filter(no=>{
        const name=no<=500 ? NAMES[no] : STATIC_NEW_NAMES[no];
        return (name||"").includes(raw);
      });
+     label=`名稱「${raw}」`;
    }
+ }else{
+   // 搜尋框空白時：依上方「編號從～到」顯示整個區間。
+   nums=Array.from({length:max-min+1},(_,i)=>min+i);
+   label=`區間 No.${min}～${max}`;
  }
 
- const mons=await Promise.all(nums.map(resolvePokemon));
- const results=mons.filter(p=>matchesZhuyinSymbol(p,symbol));
-
- if(!results.length){
+ if(!nums.length){
    grid.classList.remove("rep-grid");
    grid.innerHTML="";
-   status.textContent="🔍 找不到符合條件的寶可夢";
+   status.textContent=`🔍 ${label}：找不到寶可夢`;
    return;
  }
 
- const parts=[];
- if(raw) parts.push(`搜尋「${raw}」`);
- if(symbol) parts.push(`注音「${symbol}」`);
- const condition=parts.length?parts.join("＋"):"全部寶可夢";
- render(results.map(p=>({p})),"search",`🔍 ${condition}：找到 ${results.length} 隻`);
+ const mons=await Promise.all(nums.map(resolvePokemon));
+ render(mons.map(p=>({p})),"search",`🔍 ${label}：找到 ${mons.length} 隻`);
 }
 
 async function showRep(){
