@@ -131,7 +131,7 @@ button:active{transform:translateY(2px);box-shadow:none}.random{background:#69c8
 <div class="wrap">
   <section class="hero">
     <h1>🌟 幼兒寶可夢注音學習卡</h1>
-    <p>看寶可夢、認中文字、逐字讀注音。可搜尋名稱或編號，也能用注音下拉選單挑選 ㄅ～ㄦ；按「隨機產生 12 隻」可每天換題。</p>
+    <p>看寶可夢、認中文字、逐字讀注音。可搜尋名稱或編號，也能用注音下拉選單挑選 ㄅ～ㄦ；下拉選注音後按「隨機產生 12 隻」，可指定同一注音；選「全部注音（混合）」則隨機混合出題。</p>
   </section>
 
   <div class="controls">
@@ -146,7 +146,7 @@ button:active{transform:translateY(2px);box-shadow:none}.random{background:#69c8
     <input id="searchInput" class="search-input" type="search"
            placeholder="搜尋名稱或編號" aria-label="搜尋寶可夢名稱或編號">
     <select id="zhuyinSelect" class="zhuyin-select" aria-label="選擇注音符號">
-      <option value="">全部注音</option>
+      <option value="">全部注音（混合）</option>
       <optgroup label="聲母">
         <option>ㄅ</option><option>ㄆ</option><option>ㄇ</option><option>ㄈ</option>
         <option>ㄉ</option><option>ㄊ</option><option>ㄋ</option><option>ㄌ</option>
@@ -165,7 +165,7 @@ button:active{transform:translateY(2px);box-shadow:none}.random{background:#69c8
       </optgroup>
     </select>
     <button class="search-btn" id="searchBtn">🔍 搜尋</button>
-    <button class="random" id="randomBtn">🎲 隨機注音＋12 隻</button>
+    <button class="random" id="randomBtn">🎲 隨機產生 12 隻</button>
     <button class="stars" id="zhuyinBtn">⭐ 37音全覽／換一批</button>
     <button class="print" onclick="window.print()">🖨️ A4 列印</button>
   </div>
@@ -315,22 +315,32 @@ async function random12(){
  document.getElementById("minNo").value=min;
  document.getElementById("maxNo").value=max;
 
- const symbols=REP.map(x=>x[0]);
+ const selectedSymbol=document.getElementById("zhuyinSelect").value;
  const nums=Array.from({length:max-min+1},(_,i)=>min+i);
- status.textContent=`🎲 正在從 No.${min}～${max} 隨機挑注音…`;
+ status.textContent=selectedSymbol
+   ? `🎲 正在從 No.${min}～${max} 挑「${selectedSymbol}」的寶可夢…`
+   : `🎲 正在從 No.${min}～${max} 隨機混合出題…`;
+
  const mons=await Promise.all(nums.map(resolvePokemon));
- const pools=symbols.map(symbol=>({symbol,mons:mons.filter(p=>matchesZhuyinSymbol(p,symbol))}))
-                    .filter(x=>x.mons.length>0);
- if(!pools.length){
+ let pool=mons;
+ if(selectedSymbol){
+   pool=mons.filter(p=>matchesZhuyinSymbol(p,selectedSymbol));
+ }
+
+ if(!pool.length){
+   grid.classList.remove("rep-grid");
    grid.innerHTML="";
-   status.textContent="這個編號範圍找不到可用的注音題目";
+   status.textContent=selectedSymbol
+     ? `這個編號範圍找不到注音「${selectedSymbol}」的寶可夢`
+     : "這個編號範圍找不到可用的寶可夢";
    return;
  }
- const pick=pools[Math.floor(Math.random()*pools.length)];
- const shuffled=[...pick.mons].sort(()=>Math.random()-.5);
+
+ const shuffled=[...pool].sort(()=>Math.random()-.5);
  const chosen=shuffled.slice(0,Math.min(12,shuffled.length));
- document.getElementById("zhuyinSelect").value=pick.symbol;
- render(chosen.map(p=>({badge:pick.symbol,p})),"random",`🎲 本次注音：${pick.symbol}｜No.${min}～${max}｜${chosen.length} 隻`);
+ const cards=chosen.map(p=>({badge:selectedSymbol||"",p}));
+ const label=selectedSymbol ? `指定注音：${selectedSymbol}` : "全部注音混合";
+ render(cards,"random",`🎲 ${label}｜No.${min}～${max}｜${chosen.length} 隻`);
 }
 
 
